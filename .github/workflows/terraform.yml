@@ -38,8 +38,10 @@ jobs:
       - name: Init TFLint
         run: tflint --init
 
-      # Run TFLint
-      - name: Run TFLint
+      # # Run TFLint
+      # - name: Run TFLint
+      #   run: tflint -f compact --recursive --force
+      - name: run tflint
         id: tflint
         run: |
           tflint -f compact --recursive --force 2>&1 | tee tflint-out.txt
@@ -49,38 +51,26 @@ jobs:
             sed -i '1i*************' tflint-out.txt
             sed -i '1iTFLint Report' tflint-out.txt
           fi
+      - name: TFLint Output in PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+          header: tflint-outputs
+          recreate: true
+          path: tflint-out.txt
 
       # Run Tfsec
       - name: Run Tfsec
-        id: tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
 
-      # Run Checkov
+        
+      - name: Format Terraform files
+        run: terraform fmt -recursive
+        
+      # Test with Checkov
       - name: Test with Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
         continue-on-error: true
 
-      # Format Terraform files
-      - name: Format Terraform files
-        run: terraform fmt -recursive
-
-      # Check for errors or issues and comment on PR if found
-      - name: Comment on PR if there are errors/issues
-        if: steps.tflint.outputs.issue_detected == 'true' || steps.tfsec.outputs.issue_detected == 'true' || steps.checkov.outputs.issue_detected == 'true'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
-          header: terraform-checks
-          recreate: true
-          message: |
-            ```
-            TFLint Output:
-            $(cat tflint-out.txt)
-
-            TFSec Output:
-            ${{ steps.tfsec.outputs.tfsec_output }}
-
-            Checkov Output:
-            ${{ steps.checkov.outputs.checkov_output }}
-            ```
+  
