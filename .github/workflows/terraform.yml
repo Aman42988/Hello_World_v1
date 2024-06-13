@@ -1,4 +1,4 @@
-name: Create resources using Terraform
+name: Create resources using Terraform:
 
 on:
   push:
