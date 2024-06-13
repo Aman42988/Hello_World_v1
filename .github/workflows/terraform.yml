@@ -17,60 +17,31 @@ jobs:
       - name: Check out Git Repository
         uses: actions/checkout@v3
 
-      # Cache TFLint plugins directory
-      - name: Cache plugin dir
-        uses: actions/cache@v2
-        with:
-          path: ~/.tflint.d/plugins
-          key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
-
-      # Setup TFLint
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v2
-        with:
-          github_token: ${{ secrets.CI_GITHUB_TOKEN }}
-
-      # Print TFLint version
-      - name: Show TFLint version
-        run: tflint --version
-
-      # Install TFLint plugins
-      - name: Init TFLint
-        run: tflint --init
-
-      # # Run TFLint
-      # - name: Run TFLint
-      #   run: tflint -f compact --recursive --force
-      - name: run tflint
-        id: tflint
+      # Run Checkov
+      - name: Test with Checkov
+        id: checkov
         run: |
-          tflint -f compact --recursive --force 2>&1 | tee tflint-out.txt
-          if [ ! -s tflint-out.txt ]; then
-            echo "TFLint run has no findings" >> tflint-out.txt
-          else
-            sed -i '1i*************' tflint-out.txt
-            sed -i '1iTFLint Report' tflint-out.txt
+          checkov -d ./Terraform_code --quiet --no-guide | tee checkov-out.txt
+          if grep -q "Error" checkov-out.txt; then
+            echo "::set-output name=issue_detected::true"
+            grep -E "|Error:|resource:" checkov-out.txt > checkov-err.txt
           fi
-      - name: TFLint Output in PR
+
+      # Check if there's any issue detected and comment on PR if found
+      - name: Comment on PR if there are issues
+        if: steps.checkov.outputs.issue_detected == 'true'
+        run: |
+          cat checkov-err.txt | while IFS= read -r line; do
+            echo "::set-output name=checkov_error::$line"
+          done
+
+      - name: Checkov Output in PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
-          header: tflint-outputs
+          header: checkov-outputs
           recreate: true
-          path: tflint-out.txt
-
-      # Run Tfsec
-      - name: Run Tfsec
-        uses: aquasecurity/tfsec-action@v1.0.0
-
-        
-      - name: Format Terraform files
-        run: terraform fmt -recursive
-        
-      # Test with Checkov
-      - name: Test with Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        continue-on-error: true
-
-  
+          message: |
+            ```
+            ${{ steps.checkov.outputs.checkov_error }}
+            ```
