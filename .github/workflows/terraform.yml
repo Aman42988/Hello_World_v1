@@ -70,7 +70,29 @@ jobs:
       # Test with Checkov
       - name: Test with Checkov
         id: checkov
-        uses: bridgecrewio/checkov-action@master
-        continue-on-error: true
+        run: |
+          checkov -d ./Terraform_code --quiet --no-guide | tee checkov-out.txt
+          if grep -q "Error" checkov-out.txt; then
+            echo "::set-output name=issue_detected::true"
+            grep -E "|Error:|resource:" checkov-out.txt > checkov-err.txt
+          fi
 
+      # Check if there's any issue detected and comment on PR if found
+      - name: Comment on PR if there are issues
+        if: steps.checkov.outputs.issue_detected == 'true'
+        run: |
+          cat checkov-err.txt | while IFS= read -r line; do
+            echo "::set-output name=checkov_error::$line"
+          done
+
+      - name: Checkov Output in PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+          header: checkov-outputs
+          recreate: true
+          message: |
+            ```
+            ${{ Error Occured }}
+            ```
   
