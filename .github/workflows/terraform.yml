@@ -75,27 +75,26 @@ jobs:
       - name: Test with Checkov (Action)
         id: checkov
         uses: bridgecrewio/checkov-action@master
-        continue-on-error: true
         with:
           directory: ./Terraform_code
 
       # Save Checkov output to a file
-      - name: Save Checkov Output
-        if: always()
-        run: echo "${{ steps.checkov.outputs.checkov_command }}" > checkov.txt
+      # - name: Save Checkov Output
+      #   if: always()
+      #   run: echo "${{ steps.checkov.outputs.checkov_command }}" > checkov.txt
 
-      # Show Checkov output in the workflow log
-      - name: Display Checkov Output
-        if: always()
-        run: cat checkov.txt
+      # # Show Checkov output in the workflow log
+      # - name: Display Checkov Output
+      #   if: always()
+      #   run: cat checkov.txt
         
-      - name: Checkov Output in PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
-          header: checkov-outputs
-          recreate: true
-          message: |
-            ```
-            ${{  steps.checkov.outputs.checkov_command }}
-            ```
+      # - name: Checkov Output in PR
+      #   uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #     GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+      #     header: checkov-outputs
+      #     recreate: true
+      #     message: |
+      #       ```
+      #       ${{  steps.checkov.outputs.checkov_command }}
+      #       ```
