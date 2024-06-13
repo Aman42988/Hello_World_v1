@@ -97,5 +97,5 @@ jobs:
           recreate: true
           message: |
             ```
-            ${{ steps.checkov.outputs.checkov_error }}
+            ${{ checkov.txt }}
             ```
