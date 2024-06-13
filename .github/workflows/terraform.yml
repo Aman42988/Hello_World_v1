@@ -82,7 +82,7 @@ jobs:
       # Save Checkov output to a file
       - name: Save Checkov Output
         if: always()
-        run: echo "${{ steps.checkov.outputs.checkov_results }}" > checkov.txt
+        run: echo "${{ steps.checkov.outputs.checkov_command }}" > checkov.txt
 
       # Show Checkov output in the workflow log
       - name: Display Checkov Output
@@ -97,5 +97,5 @@ jobs:
           recreate: true
           message: |
             ```
-            ${{ checkov.txt }}
+            ${{  steps.checkov.outputs.checkov_command }}
             ```
