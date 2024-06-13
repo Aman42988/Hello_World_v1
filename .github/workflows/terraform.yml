@@ -78,23 +78,21 @@ jobs:
         with:
           directory: ./Terraform_code
 
-      # Save Checkov output to a file
-      # - name: Save Checkov Output
-      #   if: always()
-      #   run: echo "${{ steps.checkov.outputs.checkov_command }}" > checkov.txt
+      - name: Save Checkov Output
+        if: always()
+        run: ${{ steps.checkov.outputs.checkov_command }} > checkov.txt
 
-      # # Show Checkov output in the workflow log
-      # - name: Display Checkov Output
-      #   if: always()
-      #   run: cat checkov.txt
-        
-      # - name: Checkov Output in PR
-      #   uses: marocchino/sticky-pull-request-comment@v2
-      #   with:
-      #     GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
-      #     header: checkov-outputs
-      #     recreate: true
-      #     message: |
-      #       ```
-      #       ${{  steps.checkov.outputs.checkov_command }}
-      #       ```
+      # Filter failure cases from Checkov output
+      - name: Filter Failure Cases
+        run: |
+          grep -E "Error:|FAILED" checkov.txt > checkov-failures.txt || true
+
+      # Comment on PR with failure cases
+      - name: Comment on PR with Failure Cases
+        if: always()
+        run: |
+          if [ -s checkov-failures.txt ]; then
+            cat checkov-failures.txt
+          else
+            echo "No failure cases found."
+          fi
