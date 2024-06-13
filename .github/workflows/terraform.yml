@@ -92,13 +92,7 @@ jobs:
           header: checkov-outputs
           recreate: true
           message: |
-            ${{ if steps.checkov.outputs.issue_detected == 'true' }}
-            ```
-            ${{ steps.checkov.outputs.checkov_error }}
-            ```
-            ${{ else }}
             ```
             No Checkov issues detected.
             ```
-            ${{ endif }}
   
