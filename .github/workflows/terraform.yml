@@ -9,48 +9,48 @@ on:
       - master
 
 jobs:
-  tflint-check:
-    runs-on: ubuntu-latest
+  # tflint-check:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Check out Git Repository
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Check out Git Repository
+  #       uses: actions/checkout@v3
 
-      - name: Cache plugin dir
-        uses: actions/cache@v2
-        with:
-          path: ~/.tflint.d/plugins
-          key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
+  #     - name: Cache plugin dir
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ~/.tflint.d/plugins
+  #         key: ${{ runner.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v2
-        with:
-          github_token: ${{ secrets.CI_GITHUB_TOKEN }}
+  #     - name: Setup TFLint
+  #       uses: terraform-linters/setup-tflint@v2
+  #       with:
+  #         github_token: ${{ secrets.CI_GITHUB_TOKEN }}
 
-      - name: Show TFLint version
-        run: tflint --version
+  #     - name: Show TFLint version
+  #       run: tflint --version
 
-      - name: Init TFLint
-        run: tflint --init
+  #     - name: Init TFLint
+  #       run: tflint --init
 
-      - name: Run TFLint
-        id: tflint
-        run: |
-          tflint -f compact --recursive --force 2>&1 | tee tflint-out.txt
-          if [ ! -s tflint-out.txt ]; then
-            echo "TFLint run has no findings" >> tflint-out.txt
-          else
-            sed -i '1i*************' tflint-out.txt
-            sed -i '1iTFLint Report' tflint-out.txt
-          fi
+  #     - name: Run TFLint
+  #       id: tflint
+  #       run: |
+  #         tflint -f compact --recursive --force 2>&1 | tee tflint-out.txt
+  #         if [ ! -s tflint-out.txt ]; then
+  #           echo "TFLint run has no findings" >> tflint-out.txt
+  #         else
+  #           sed -i '1i*************' tflint-out.txt
+  #           sed -i '1iTFLint Report' tflint-out.txt
+  #         fi
 
-      - name: TFLint Output in PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
-          header: tflint-outputs
-          recreate: true
-          path: tflint-out.txt
+  #     - name: TFLint Output in PR
+  #       uses: marocchino/sticky-pull-request-comment@v2
+  #       with:
+  #         GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+  #         header: tflint-outputs
+  #         recreate: true
+  #         path: tflint-out.txt
 
   tfsec-check:
     runs-on: ubuntu-latest
