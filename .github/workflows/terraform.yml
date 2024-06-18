@@ -69,11 +69,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Terraform and Checkov
-        uses: terraform-linters/setup-checkov@v1
-
       - name: Run Checkov
-        run: checkov -d ./Terraform_code
+        run: |
+          docker run --rm -v $(pwd):/code bridgecrew/checkov -d ./
   format-terraform:
     runs-on: ubuntu-latest
 
