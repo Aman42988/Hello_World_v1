@@ -69,12 +69,11 @@ jobs:
       - name: Check out Git Repository
         uses: actions/checkout@v3
 
-      - name: Test with Checkov
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
-        # with:
-        #  directory: ./Terraform_code
-        
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov
+        run: checkov -d ./Terraform_code
   format-terraform:
     runs-on: ubuntu-latest
 
