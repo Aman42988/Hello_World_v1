@@ -71,7 +71,7 @@ jobs:
 
       - name: Run Checkov
         run: |
-          docker run --rm -v $(pwd):/code bridgecrew/checkov -d ./
+          docker run --rm -v $(pwd):/code bridgecrew/checkov -d ./ --debug
   format-terraform:
     runs-on: ubuntu-latest
 
