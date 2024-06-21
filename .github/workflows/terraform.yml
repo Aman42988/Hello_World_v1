@@ -73,7 +73,8 @@ jobs:
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
-         directory: ./Terraform_code
+         # directory: ./Terraform_code
+         framework: terraform
         
   format-terraform:
     runs-on: ubuntu-latest
